@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.colorspace.Rgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.e.jung.savememo.SaveMemo
@@ -114,7 +115,8 @@ fun Greeting4(m : Int) {
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = TextFieldDefaults.textFieldColors(
                         backgroundColor = if (check) Color.White else customGray
-                    )
+                    ),
+                    visualTransformation = VisualTransformation.Companion.None
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

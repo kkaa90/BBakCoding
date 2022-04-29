@@ -27,7 +27,10 @@ interface SaveMemoDao {
     fun deleteAll()
 
     @Query("DELETE FROM SaveMemo where num = :num")
-    fun delete(num: Int)
+    fun delete(vararg num: Int)
+
+    @Query("DELETE FROM SaveMemo where num IN (:nums)")
+    fun deleteM(nums: Array<Int>)
 
     @Query("SELECT * FROM SaveMemo")
     fun getAllasFlow(): Flow<List<SaveMemo>>
