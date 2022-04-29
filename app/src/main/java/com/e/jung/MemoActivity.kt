@@ -1,8 +1,10 @@
 package com.e.jung
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.transition.Visibility
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,19 +29,16 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.e.jung.dataclass.Memo
 import com.e.jung.savememo.SaveMemo
 import com.e.jung.ui.theme.JungTheme
+import kotlinx.coroutines.flow.filterNotNull
 
 class MemoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val num = intent.getIntExtra("num", 0)
         val temp = intent.getStringExtra("pwd")
-        var memo = SaveMemo("", "")
-        val r = Runnable {
-            memo = saveMemoDB.dao().getMemo(num)
-        }
-        Thread(r).start()
         setContent {
             JungTheme {
                 // A surface container using the 'background' color from the theme
@@ -47,15 +46,18 @@ class MemoActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting2(memo, temp!!)
+                    Greeting2(num, temp!!)
                 }
             }
         }
     }
 }
 
+@SuppressLint("FlowOperatorInvokedInComposition")
 @Composable
-fun Greeting2(memo: SaveMemo, temp : String) {
+fun Greeting2(num: Int, temp : String) {
+    var memo = saveMemoDB.dao().getMemoAsFlow(num).filterNotNull()
+        .collectAsState(initial = SaveMemo("","")).value
     val context = LocalContext.current
     var pwd by remember {
         mutableStateOf("")
@@ -113,7 +115,7 @@ fun Greeting2(memo: SaveMemo, temp : String) {
     var visibility by remember {
         mutableStateOf(false)
     }
-    var adv by remember {
+    var adv = remember {
         mutableStateOf(false)
     }
     Scaffold(topBar = {
@@ -134,7 +136,7 @@ fun Greeting2(memo: SaveMemo, temp : String) {
                     }) {
                         Icon(imageVector = Icons.Default.Edit, contentDescription = "")
                     }
-                    IconButton(onClick = { adv = true }) {
+                    IconButton(onClick = { adv.value = true }) {
                         Icon(imageVector = Icons.Default.Delete, contentDescription = "")
                     }
                 }
@@ -142,16 +144,16 @@ fun Greeting2(memo: SaveMemo, temp : String) {
         }
     }) {
         Box() {
-            AnimatedVisibility(visible = adv) {
-                ADialog(num = memo.num)
+            AnimatedVisibility(visible = adv.value) {
+                ADialog(num = num, adv)
             }
-
         }
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(it)
             .clickable { visibility = !visibility }) {
-            if (!openDialog.value) Text(text = memo.contents)
+            if (!openDialog.value) Text(text =memo.contents)
+
             else {
 
             }
@@ -160,7 +162,7 @@ fun Greeting2(memo: SaveMemo, temp : String) {
 }
 
 @Composable
-fun ADialog(num: Int) {
+fun ADialog(num: Int, visibility: MutableState<Boolean>) {
     val context = LocalContext.current
     AlertDialog(
         onDismissRequest = { /*TODO*/ },
@@ -173,6 +175,7 @@ fun ADialog(num: Int) {
         },
         confirmButton = {
             TextButton(onClick = {
+                visibility.value = false
                 deleteMemo(num)
                 (context as Activity).finish()
             }) {
