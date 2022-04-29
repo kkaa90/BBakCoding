@@ -157,7 +157,7 @@ fun Greeting() {
             }
             LazyColumn() {
                 itemsIndexed(items = list, key = { index, memo ->
-                    memo.hashCode()
+                    memo.num
                 }) { index, memo ->
                     val state = rememberDismissState(
                         confirmStateChange = {

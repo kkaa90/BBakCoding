@@ -2,6 +2,7 @@ package com.e.jung
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -80,18 +81,27 @@ fun Greeting4(m : Int) {
                 Text(text = "취소")
             }
             TextButton(onClick = {
-                val r = Runnable {
-                    val memo = SaveMemo(content,pwd)
-                    if(m==0){
-                        saveMemoDB.dao().insert(memo)
-                    }
-                    else{
-                        saveMemoDB.dao().updateMemo(content,pwd,m)
-                    }
-
+                if(content.isEmpty()){
+                    Toast.makeText(
+                        context,
+                        "공백은 작성할 수 없습니다.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
-                Thread(r).start()
-                (context as Activity).finish()
+                else{
+                    val r = Runnable {
+                        val memo = SaveMemo(content,pwd)
+                        if(m==0){
+                            saveMemoDB.dao().insert(memo)
+                        }
+                        else{
+                            saveMemoDB.dao().updateMemo(content,pwd,m)
+                        }
+
+                    }
+                    Thread(r).start()
+                    (context as Activity).finish()
+                }
             }) {
                 Text(text = "저장")
             }
